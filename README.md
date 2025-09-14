@@ -197,9 +197,11 @@ docker-compose logs -f
 # Specific service
 docker-compose logs -f backend
 ```
-![REC-20250914203855](https://github.com/user-attachments/assets/da028882-9e37-4b14-8b5f-2d7f303fc8e7)
+![REC-20250914204525](https://github.com/user-attachments/assets/25782357-c412-45b9-b00e-2505cc87cbba)
 
 <img width="1754" height="914" alt="image" src="https://github.com/user-attachments/assets/0c815fb6-39a3-4a76-8100-323d72f6c6e3" />
+
+<img width="1762" height="1055" alt="image" src="https://github.com/user-attachments/assets/979b099c-f90d-463e-8da2-7615db24e466" />
 
 <img width="1688" height="993" alt="image" src="https://github.com/user-attachments/assets/3030142d-04a7-44bd-8c8c-4926309df407" />
 
