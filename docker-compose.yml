@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: datatys-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bluetrust
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin1996
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/sql:/docker-entrypoint-initdb.d
+    networks:
+      - datatys-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bluetrust"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s # Give Postgres a few seconds to start before checking
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: datatys-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: bluetrust
+      DB_USER: postgres
+      DB_PASSWORD: admin1996
+      UPLOAD_PATH: /app/uploads
+      MAX_FILE_SIZE: 5242880
+    ports:
+      - "3002:3002"
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - datatys-network
+    command: sh -c "npm run init-data && npm start"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React App
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: datatys-frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:3002
+      REACT_APP_UPLOAD_URL: http://localhost:3002/uploads
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - datatys-network
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  datatys-network:
+    driver: bridge
